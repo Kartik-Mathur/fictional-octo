@@ -2,7 +2,6 @@ function quickSort(arr) {
   if (arr.length <= 1) {
     return arr; // Base case: already sorted
   }
-
   let pivot = arr[arr.length - 1]; // Choose the last element as the pivot
   let left = [];
   let right = [];
