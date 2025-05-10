@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Child Vaccine Scheduler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #111;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      transition: all 0.8s ease-in-out;
+      padding: 20px;
+    }
+
+   .form-box {
+  background: #1e1e1e;
+  padding: 40px;
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+  position: relative;
+  z-index: 2;
+  transform: translateX(50px); /* Shift right slightly */
+  transition: transform 1.5s ease;
+
+}
+
+.form-box.moved-left {
+  transform: translateX(-45px); /* Slide less left */
+}
+
+
+    .right-box {
+      opacity: 0;
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+      transition: all 0.8s ease;
+      margin-left: 0;
+    }
+
+    .right-box.show {
+      opacity: 1;
+      width: 50%;
+      padding: 40px;
+      margin-left: 40px;
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: none;
+      background: #2c2c2c;
+      color: white;
+    }
+
+    .radio-group {
+      margin-top: 10px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .radio-group label {
+      font-weight: normal;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px 24px;
+      background: #00e6e6;
+      border: none;
+      border-radius: 6px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #00cccc;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    .schedule-box {
+      background: #222;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
+      animation: fadeIn 1s ease-in;
+    }
+   
+
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="container">
+    <div class="form-box" id="formBox">
+      <h2>🩺 Vaccine Scheduler</h2>
+      <p style="font-size: 14px; color: #aaa;">Fill out the details to generate your child's vaccination schedule.</p>
+      <form id="vaccineForm">
+        <label for="name">👶 Child's Name</label>
+        <input type="text" id="name" required>
+
+        <label for="dob">📅 Date of Birth</label>
+        <input type="date" id="dob" required>
+
+        <label for="gender">🚻 Gender</label>
+        <select id="gender" required>
+          <option value="" hidden>Select Gender</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+
+        <label>💉 Already taken vaccine?</label>
+        <div class="radio-group">
+          <label><input type="radio" name="vaccineTaken" value="Yes" required> Yes</label>
+          <label><input type="radio" name="vaccineTaken" value="No"> No</label>
+        </div>
+
+        <button type="submit">Continue →</button>
+      </form>
+    </div>
+
+    <div class="right-box" id="scheduleBox">
+      <div id="scheduleContent" class="schedule-box"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("vaccineForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const data = {
+        name: document.getElementById("name").value,
+        dob: document.getElementById("dob").value,
+        gender: document.getElementById("gender").value,
+        vaccineTaken: document.querySelector('input[name="vaccineTaken"]:checked').value
+      };
+
+      const response = await fetch("http://localhost:5000/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      // Slide form and show schedule
+      document.getElementById("formBox").classList.add("moved-left");
+      document.getElementById("scheduleBox").classList.add("show");
+
+      document.getElementById("scheduleContent").innerHTML = `
+        <h3>📅 Scheduled Details</h3>
+        <p><strong>Clinic:</strong> ${result.clinic}</p>
+        <p><strong>Next Dose:</strong> ${result.next_dose}</p>
+        <p><strong>Time:</strong> ${result.time}</p>
+        <p><strong>Vaccine:</strong> ${result.vaccine}</p>
+      `;
+    });
+  </script>
+
+</body>
+</html>
